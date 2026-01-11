@@ -41,8 +41,14 @@
   "recommendedDepartureTime": "HH:mm or NOW",
   "reason": "string"
 }
+```
 
-### 📥 Questions
+📥 Questions
+
 1. 집에서 신대방역까지는 10분 거리라고 저장해줘
+
 2. 집 기준으로 신대방역 7호선 타려면 몇 시에 출발하는 게 좋아?
+
 3. 지금 나가면 역에서 몇 분 정도 기다리게 돼?
+
+---
