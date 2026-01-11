@@ -1,9 +1,7 @@
 package com.jinwoo.mcp.departure.service;
 
 import com.jinwoo.mcp.departure.client.ArrivalClient;
-import com.jinwoo.mcp.departure.dto.AssessDepartureTimingRequest;
-import com.jinwoo.mcp.departure.dto.AssessDepartureTimingResponse;
-import com.jinwoo.mcp.departure.dto.Decision;
+import com.jinwoo.mcp.departure.dto.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
@@ -20,13 +18,21 @@ public class DepartureTimingService {
     public DepartureTimingService(ArrivalClient arrivalClient) {
         this.arrivalClient = arrivalClient;
 
-        presetMap.put("home", 8);
+//        presetMap.put("home", 8);
     }
 
     public AssessDepartureTimingResponse assess(AssessDepartureTimingRequest request) {
         List<Integer> arrivals = arrivalClient.getRemainingMinutes(request.getStation(), request.getLine());
         Integer estimated = null;
         int bufferMinutes = 1;
+
+        if (arrivals.isEmpty()) {
+            return new AssessDepartureTimingResponse(
+                    Decision.WAIT,
+                    null,
+                    "실시간 열차 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요."
+            );
+        }
 
         if (request.getPresetName() != null && !request.getPresetName().isBlank()) {
             estimated = presetMap.get(request.getPresetName());
@@ -81,5 +87,18 @@ public class DepartureTimingService {
 
 
         return new AssessDepartureTimingResponse(decision, recommendedDepartureTime, reason);
+    }
+
+    public SavePresetResponse savePreset(SavePresetRequest request) {
+        if (request.getPresetName() == null || request.getPresetName().isBlank()) {
+            return new SavePresetResponse(false, "presetName은 필수입니다.");
+        }
+        if (request.getEstimatedTimeToStation() == null || request.getEstimatedTimeToStation() <= 0) {
+            return new SavePresetResponse(false, "1분 이상의 시간을 입력해 주세요.");
+        }
+
+        presetMap.put(request.getPresetName(), request.getEstimatedTimeToStation());
+        return new SavePresetResponse(true,
+                "프리셋 '" + request.getPresetName() + "' 저장 완료");
     }
 }

@@ -3,6 +3,8 @@ package com.jinwoo.mcp.departure.controller;
 import com.jinwoo.mcp.departure.DepartureTimingMcpApplication;
 import com.jinwoo.mcp.departure.dto.AssessDepartureTimingRequest;
 import com.jinwoo.mcp.departure.dto.AssessDepartureTimingResponse;
+import com.jinwoo.mcp.departure.dto.SavePresetRequest;
+import com.jinwoo.mcp.departure.dto.SavePresetResponse;
 import com.jinwoo.mcp.departure.service.DepartureTimingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,5 +21,9 @@ public class DepartureTimingController {
     @PostMapping
     public AssessDepartureTimingResponse assess(@RequestBody AssessDepartureTimingRequest request) {
         return departureTimingService.assess(request);
+    }
+    @PostMapping("/presets")
+    public SavePresetResponse savePreset(@RequestBody SavePresetRequest request) {
+        return departureTimingService.savePreset(request);
     }
 }
