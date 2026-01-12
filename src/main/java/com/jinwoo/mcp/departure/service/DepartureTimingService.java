@@ -18,7 +18,7 @@ public class DepartureTimingService {
     public DepartureTimingService(ArrivalClient arrivalClient) {
         this.arrivalClient = arrivalClient;
 
-//        presetMap.put("home", 8);
+//        presetMap.put("home", 8); // 테스트 값
     }
 
     public AssessDepartureTimingResponse assess(AssessDepartureTimingRequest request) {
@@ -91,7 +91,7 @@ public class DepartureTimingService {
 
     public SavePresetResponse savePreset(SavePresetRequest request) {
         if (request.getPresetName() == null || request.getPresetName().isBlank()) {
-            return new SavePresetResponse(false, "presetName은 필수입니다.");
+            return new SavePresetResponse(false, "프리셋 이름을 입력해주세요.");
         }
         if (request.getEstimatedTimeToStation() == null || request.getEstimatedTimeToStation() <= 0) {
             return new SavePresetResponse(false, "1분 이상의 시간을 입력해 주세요.");

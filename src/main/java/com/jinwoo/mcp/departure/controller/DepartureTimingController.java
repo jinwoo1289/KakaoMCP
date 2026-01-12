@@ -7,7 +7,6 @@ import com.jinwoo.mcp.departure.dto.SavePresetRequest;
 import com.jinwoo.mcp.departure.dto.SavePresetResponse;
 import com.jinwoo.mcp.departure.service.DepartureTimingService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
