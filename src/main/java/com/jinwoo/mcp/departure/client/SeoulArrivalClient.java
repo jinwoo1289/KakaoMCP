@@ -47,6 +47,7 @@ public class SeoulArrivalClient implements ArrivalClient {
                     .filter(r -> targetSubwayId.equals(r.getSubwayId()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
+                    .filter(m -> m > 0)
                     .sorted()
                     .limit(5)
                     .toList();
@@ -84,13 +85,34 @@ public class SeoulArrivalClient implements ArrivalClient {
     }
 
     private String lineToSubwayId(String line) {
-        return switch (line) {
+        if (line == null) return null;
+        String s = line.trim();
+
+        return switch (s) {
             case "1", "1호선" -> "1001";
             case "2", "2호선" -> "1002";
             case "3", "3호선" -> "1003";
             case "4", "4호선" -> "1004";
+            case "5", "5호선" -> "1005";
+            case "6", "6호선" -> "1006";
+            case "7", "7호선" -> "1007";
+            case "8", "8호선" -> "1008";
+            case "9", "9호선" -> "1009";
+
+            case "중앙선" -> "1061";
+            case "경의중앙선" -> "1063";
+            case "공항철도", "AREX" -> "1065";
+            case "경춘선" -> "1067";
+            case "수인분당선", "분당선", "수인선" -> "1075";
+            case "신분당선" -> "1077";
+            case "우이신설선" -> "1092";
+            case "서해선" -> "1093";
+            case "경강선" -> "1081";
+            case "GTX-A", "GTXA" -> "1032";
+
             default -> null;
         };
     }
+
 
 }
