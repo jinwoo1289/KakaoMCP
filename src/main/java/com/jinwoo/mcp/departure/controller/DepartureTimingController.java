@@ -55,16 +55,82 @@ public class DepartureTimingController {
             ));
         }
 
-        // 🔹 tools/list (확장 대비 – 지금은 빈 목록)
         if ("tools/list".equals(method)) {
             return ResponseEntity.ok(Map.of(
                     "jsonrpc", "2.0",
                     "id", id,
                     "result", Map.of(
-                            "tools", new Object[0]
+                            "tools", new Object[]{
+                                    Map.of(
+                                            "name", "assess_departure_timing",
+                                            "description",
+                                            "지하철 실시간 도착 정보를 바탕으로 역 대기를 최소화할 수 있는 최적 출발 시점을 판단합니다.",
+                                            "inputSchema", Map.of(
+                                                    "type", "object",
+                                                    "properties", Map.of(
+                                                            "station", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "출발역 이름"
+                                                            ),
+                                                            "line", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "지하철 노선"
+                                                            ),
+                                                            "direction", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "상행/하행"
+                                                            ),
+                                                            "estimatedTimeToStation", Map.of(
+                                                                    "type", "number",
+                                                                    "description", "집에서 역까지 이동 시간(분)"
+                                                            ),
+                                                            "presetName", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "저장된 프리셋 이름 (선택)"
+                                                            )
+                                                    ),
+                                                    "required", new String[]{
+                                                            "station",
+                                                            "line"
+                                                    }
+                                            )
+                                    )
+                            }
                     )
             ));
         }
+
+        if ("tools/call".equals(method)) {
+            Map<String, Object> params = (Map<String, Object>) body.get("params");
+            String toolName = (String) params.get("name");
+            Map<String, Object> arguments =
+                    (Map<String, Object>) params.get("arguments");
+
+            if ("assess_departure_timing".equals(toolName)) {
+                AssessDepartureTimingRequest req = new AssessDepartureTimingRequest();
+                req.setStation((String) arguments.get("station"));
+                req.setLine((String) arguments.get("line"));
+                req.setEstimatedTimeToStation(
+                        ((Number) arguments.get("EstimatedTimeToStation")).intValue()
+                );
+
+                Object result = departureTimingService.assess(req);
+
+                return ResponseEntity.ok(Map.of(
+                        "jsonrpc", "2.0",
+                        "id", id,
+                        "result", Map.of(
+                                "content", new Object[]{
+                                        Map.of(
+                                                "type", "text",
+                                                "text", result.toString()
+                                        )
+                                }
+                        )
+                ));
+            }
+        }
+
 
         // 🔹 알 수 없는 MCP 메서드
         return ResponseEntity.ok(Map.of(
