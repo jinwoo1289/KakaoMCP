@@ -9,4 +9,9 @@ public class HomeController {
     public String home() {
         return "KakaoMCP - Departure Timing API is running. Use POST /mcp and POST /mcp/presets";
     }
+
+    @GetMapping("/mcp")
+    public String mcpHealth() {
+        return "KakaoMCP - Departure Timing API is running. Use POST /mcp and POST /mcp/presets";
+    }
 }
