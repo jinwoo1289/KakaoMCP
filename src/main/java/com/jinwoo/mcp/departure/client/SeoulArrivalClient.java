@@ -78,6 +78,7 @@ public class SeoulArrivalClient implements ArrivalClient {
                     .filter(r -> normalizedDir == null || normalizedDir.equals(r.getUpdnLine()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
+                    .filter(m -> m > 0)
                     .sorted()
                     .limit(5)
                     .toList();
