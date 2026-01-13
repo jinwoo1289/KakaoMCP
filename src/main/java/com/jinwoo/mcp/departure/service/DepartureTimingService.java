@@ -71,7 +71,7 @@ public class DepartureTimingService {
 
         if (stationWait == null) {
             decision = Decision.TOO_LATE;
-            reason = "지금 출발하면 가까운 열차들 기준으로 탑승이 어렵습니다.";
+            reason = "현재 도착 예정인 열차들로는 탑승이 어렵습니다. 다음 열차 정보 갱신을 위해 잠시 후에 다시 시도해 주세요";
         }
 
         else if (stationWait == 0) {

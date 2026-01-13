@@ -36,9 +36,17 @@ public class SeoulArrivalClient implements ArrivalClient {
                     restTemplate.getForObject(uri, RealTimeArrivalResponse.class);
 
             if (res == null || res.getRow() == null || res.getRow().isEmpty()) {
+                log.info("API RES NULL station={} line={}", station, line);
                 return mockArrivals(); // fallback
             }
+            log.info("DEBUG rows={} station={} line={}", res.getRow().size(), station, line);
 
+            log.info("DEBUG distinctSubwayId={}",
+                    res.getRow().stream()
+                            .map(RealTimeArrivalResponse.Row::getSubwayId)
+                            .distinct()
+                            .toList()
+            );
             String targetSubwayId = lineToSubwayId(line);
             if (targetSubwayId == null)
                 return mockArrivals();
