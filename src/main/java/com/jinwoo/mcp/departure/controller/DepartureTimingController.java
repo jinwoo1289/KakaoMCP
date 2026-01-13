@@ -1,39 +1,55 @@
 package com.jinwoo.mcp.departure.controller;
 
-import com.jinwoo.mcp.departure.DepartureTimingMcpApplication;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jinwoo.mcp.departure.dto.AssessDepartureTimingRequest;
 import com.jinwoo.mcp.departure.dto.SavePresetRequest;
 import com.jinwoo.mcp.departure.dto.SavePresetResponse;
 import com.jinwoo.mcp.departure.service.DepartureTimingService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mcp")
+@Slf4j
 public class DepartureTimingController {
+
     private final DepartureTimingService departureTimingService;
-    @PostMapping(produces= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> assess(@RequestBody(required = false) AssessDepartureTimingRequest req) {
 
-        // 검증 호출 (body 없음)
-        if (req == null) {
-            return ResponseEntity.ok(Map.of("status","ok","message","MCP server validated"));
+    private final ObjectMapper objectMapper = new ObjectMapper(); // 주입 X, 직접 생성
+
+    @PostMapping(consumes = MediaType.ALL_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> assess(@RequestBody(required = false) String rawBody) {
+
+        if (rawBody == null || rawBody.isBlank()) {
+            return ResponseEntity.ok(Map.of("status", "ok", "message", "MCP server validated"));
         }
 
-        // 검증 호출 (필수값 없음)
-        if (req.getStation() == null || req.getLine() == null) {
-            return ResponseEntity.ok(Map.of("status","ok","message","MCP server validated"));
-        }
+        try {
+            Map<String, Object> body = objectMapper.readValue(rawBody, Map.class);
 
-        return ResponseEntity.ok(departureTimingService.assess(req));
+            Object station = body.get("station");
+            Object line = body.get("line");
+
+            if (station == null || line == null) {
+                return ResponseEntity.ok(Map.of("status", "ok", "message", "MCP server validated"));
+            }
+
+            AssessDepartureTimingRequest req =
+                    objectMapper.convertValue(body, AssessDepartureTimingRequest.class);
+
+            return ResponseEntity.ok(departureTimingService.assess(req));
+
+        } catch (Exception e) {
+            log.warn("MCP validate/parse failed. rawBody={}", rawBody, e);
+            return ResponseEntity.ok(Map.of("status", "ok", "message", "MCP server validated"));
+        }
     }
 
     @PostMapping("/presets")
@@ -41,3 +57,4 @@ public class DepartureTimingController {
         return departureTimingService.savePreset(request);
     }
 }
+
