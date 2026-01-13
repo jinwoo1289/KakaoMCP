@@ -55,6 +55,22 @@ public class SeoulArrivalClient implements ArrivalClient {
             if (targetSubwayId == null)
                 return mockArrivals();
 
+            long total = res.getRow().size();
+            long idFiltered = res.getRow().stream().filter(r -> targetSubwayId.equals(r.getSubwayId())).count();
+            long dirFiltered = res.getRow().stream()
+                    .filter(r -> targetSubwayId.equals(r.getSubwayId()))
+                    .filter(r -> direction == null || direction.isBlank() || direction.equals(r.getUpdnLine()))
+                    .count();
+
+            List<String> barvlSample = res.getRow().stream()
+                    .filter(r -> targetSubwayId.equals(r.getSubwayId()))
+                    .limit(10)
+                    .map(RealTimeArrivalResponse.Row::getBarvlDt)
+                    .toList();
+
+            log.info("DEBUG total={} idFiltered={} dirFiltered={} barvlDtSample={}",
+                    total, idFiltered, dirFiltered, barvlSample);
+
             List<Integer> live = res.getRow().stream()
                     .filter(r -> targetSubwayId.equals(r.getSubwayId()))
                     .filter(r -> direction == null || direction.equals(r.getUpdnLine()))
