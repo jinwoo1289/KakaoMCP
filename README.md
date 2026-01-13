@@ -75,7 +75,7 @@
 
 > 실시간 지하철 도착 정보는 서울시 Open API를 사용하며,  
 > 네트워크 오류 발생 시에도 서비스가 동작하도록 fallback 데이터를 사용합니다.
-
+> bufferMinutes을 설정하여 열차를 놓치는 확률을 줄였습니다.
 
 
 📥 Example Questions
