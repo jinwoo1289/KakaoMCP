@@ -26,6 +26,11 @@ public class SeoulArrivalClient implements ArrivalClient {
     @Override
     public List<Integer> getRemainingMinutes(String station, String line, String direction) {
         try {
+            if (station == null || station.isBlank() || line == null || line.isBlank()) {
+                log.warn("Invalid input from request: station={}, line={}, direction={}", station, line, direction);
+                return mockArrivals();
+            }
+
             URI uri = UriComponentsBuilder
                     .fromUriString("http://swopenAPI.seoul.go.kr/api/subway/{key}/xml/realtimeStationArrival/0/30/{station}")
                     .buildAndExpand(Map.of("key", apiKey, "station", normalizeStation(station)))
@@ -97,8 +102,8 @@ public class SeoulArrivalClient implements ArrivalClient {
             return live.isEmpty() ? mockArrivals() : live;
 
         } catch (Exception e) {
-            System.out.println("[SeoulArrivalClient] FALLBACK used: " + e.getMessage());
-            return mockArrivals(); // 네트워크/파싱 에러도 안정 fallback
+            log.error("[SeoulArrivalClient] FALLBACK used", e); // 스택트레이스 전체 출력
+            return mockArrivals();
         }
     }
 
