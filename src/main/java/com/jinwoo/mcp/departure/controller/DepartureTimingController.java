@@ -20,7 +20,7 @@ import java.util.Map;
 @RequestMapping("/mcp")
 public class DepartureTimingController {
     private final DepartureTimingService departureTimingService;
-    @PostMapping(value="/mcp", produces= MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(produces= MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> assess(@RequestBody(required = false) AssessDepartureTimingRequest req) {
 
         // 검증 호출 (body 없음)
