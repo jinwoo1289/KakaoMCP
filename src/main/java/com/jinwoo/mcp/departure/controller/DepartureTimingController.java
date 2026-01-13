@@ -61,37 +61,43 @@ public class DepartureTimingController {
                     "id", id,
                     "result", Map.of(
                             "tools", new Object[]{
+                                    // 기존 assess
                                     Map.of(
                                             "name", "assess_departure_timing",
                                             "description",
-                                            "지하철 실시간 도착 정보를 바탕으로 역 대기를 최소화할 수 있는 최적 출발 시점을 판단합니다.",
+                                            "지하철 실시간 도착 정보를 바탕으로 최적 출발 시점을 판단합니다.",
                                             "inputSchema", Map.of(
                                                     "type", "object",
                                                     "properties", Map.of(
-                                                            "station", Map.of(
+                                                            "station", Map.of("type", "string"),
+                                                            "line", Map.of("type", "string"),
+                                                            "estimatedTimeToStation", Map.of("type", "number"),
+                                                            "presetName", Map.of("type", "string")
+                                                    ),
+                                                    "required", new String[]{"station", "line"}
+                                            )
+                                    ),
+
+                                    // ✅ save preset 추가
+                                    Map.of(
+                                            "name", "save_preset",
+                                            "description",
+                                            "집에서 역까지의 이동 시간을 프리셋으로 저장합니다.",
+                                            "inputSchema", Map.of(
+                                                    "type", "object",
+                                                    "properties", Map.of(
+                                                            "presetName", Map.of(
                                                                     "type", "string",
-                                                                    "description", "출발역 이름"
-                                                            ),
-                                                            "line", Map.of(
-                                                                    "type", "string",
-                                                                    "description", "지하철 노선"
-                                                            ),
-                                                            "direction", Map.of(
-                                                                    "type", "string",
-                                                                    "description", "상행/하행"
+                                                                    "description", "프리셋 이름"
                                                             ),
                                                             "estimatedTimeToStation", Map.of(
                                                                     "type", "number",
                                                                     "description", "집에서 역까지 이동 시간(분)"
-                                                            ),
-                                                            "presetName", Map.of(
-                                                                    "type", "string",
-                                                                    "description", "저장된 프리셋 이름 (선택)"
                                                             )
                                                     ),
                                                     "required", new String[]{
-                                                            "station",
-                                                            "line"
+                                                            "presetName",
+                                                            "estimatedTimeToStation"
                                                     }
                                             )
                                     )
@@ -100,19 +106,28 @@ public class DepartureTimingController {
             ));
         }
 
+
         if ("tools/call".equals(method)) {
             Map<String, Object> params = (Map<String, Object>) body.get("params");
             String toolName = (String) params.get("name");
             Map<String, Object> arguments =
                     (Map<String, Object>) params.get("arguments");
 
+            // 🔹 assess_departure_timing
             if ("assess_departure_timing".equals(toolName)) {
                 AssessDepartureTimingRequest req = new AssessDepartureTimingRequest();
                 req.setStation((String) arguments.get("station"));
                 req.setLine((String) arguments.get("line"));
-                req.setEstimatedTimeToStation(
-                        ((Number) arguments.get("EstimatedTimeToStation")).intValue()
-                );
+
+                if (arguments.get("estimatedTimeToStation") != null) {
+                    req.setEstimatedTimeToStation(
+                            ((Number) arguments.get("estimatedTimeToStation")).intValue()
+                    );
+                }
+
+                if (arguments.get("presetName") != null) {
+                    req.setPresetName((String) arguments.get("presetName"));
+                }
 
                 Object result = departureTimingService.assess(req);
 
@@ -129,7 +144,34 @@ public class DepartureTimingController {
                         )
                 ));
             }
+
+            // 🔹 save_preset
+            if ("save_preset".equals(toolName)) {
+                SavePresetRequest req = new SavePresetRequest();
+                req.setPresetName((String) arguments.get("presetName"));
+                req.setEstimatedTimeToStation(
+                        ((Number) arguments.get("estimatedTimeToStation")).intValue()
+                );
+
+                Object result = departureTimingService.savePreset(req);
+
+                return ResponseEntity.ok(Map.of(
+                        "jsonrpc", "2.0",
+                        "id", id,
+                        "result", Map.of(
+                                "content", new Object[]{
+                                        Map.of(
+                                                "type", "text",
+                                                "text", result.toString()
+                                        )
+                                }
+                        )
+                ));
+            }
         }
+
+
+
 
 
         // 🔹 알 수 없는 MCP 메서드
