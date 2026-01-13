@@ -19,33 +19,68 @@ public class DepartureTimingController {
     private final DepartureTimingService departureTimingService;
 
     /**
-     * ✅ PlayMCP "정보 불러오기" / 연결 확인용
-     * - 어떤 메서드/Content-Type/바디가 와도 OK를 돌려줘야 연결 실패가 안 뜸
-     * - PlayMCP가 endpoint에 /mcp를 붙이거나 또 붙여서 /mcp/mcp 로 때리는 경우도 있어서 같이 열어둠
+     * ✅ MCP 메인 엔드포인트
+     * - PlayMCP "정보 불러오기" → initialize
+     * - 반드시 JSON-RPC 스펙 응답 필요
      */
-    @RequestMapping(
-            value = {"/", "/mcp", "/mcp/", "/mcp/mcp"},
-            method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD},
-            consumes = MediaType.ALL_VALUE,
+    @PostMapping(
+            value = {"/mcp", "/mcp/", "/mcp/mcp"},
+            consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<Map<String, Object>> validate(
-            @RequestBody(required = false) String rawBody,
+    public ResponseEntity<Map<String, Object>> mcp(
+            @RequestBody Map<String, Object> body,
             @RequestHeader Map<String, String> headers
     ) {
-        // ✅ 디버그: PlayMCP가 뭘 보내는지 확인
-        log.warn("MCP_VALIDATE path validate-hit, rawBody={}", rawBody);
-        log.warn("MCP_VALIDATE headers={}", headers);
+        log.info("MCP_REQUEST body={}", body);
 
+        String method = (String) body.get("method");
+        Object id = body.get("id");
+
+        // 🔹 initialize (PlayMCP 연결 확인 단계)
+        if ("initialize".equals(method)) {
+            return ResponseEntity.ok(Map.of(
+                    "jsonrpc", "2.0",
+                    "id", id,
+                    "result", Map.of(
+                            "protocolVersion", "2025-06-18",
+                            "capabilities", Map.of(
+                                    "tools", Map.of()
+                            ),
+                            "serverInfo", Map.of(
+                                    "name", "departure-timing-mcp",
+                                    "version", "1.0.0"
+                            )
+                    )
+            ));
+        }
+
+        // 🔹 tools/list (확장 대비 – 지금은 빈 목록)
+        if ("tools/list".equals(method)) {
+            return ResponseEntity.ok(Map.of(
+                    "jsonrpc", "2.0",
+                    "id", id,
+                    "result", Map.of(
+                            "tools", new Object[0]
+                    )
+            ));
+        }
+
+        // 🔹 알 수 없는 MCP 메서드
         return ResponseEntity.ok(Map.of(
-                "status", "ok",
-                "message", "MCP server validated"
+                "jsonrpc", "2.0",
+                "id", id,
+                "error", Map.of(
+                        "code", -32601,
+                        "message", "Method not found"
+                )
         ));
     }
 
     /**
-     * ✅ 실제 기능 요청 (Postman/LLM Tool 호출은 여기로)
-     * - PlayMCP 검증과 섞이면 계속 실패하니까 분리
+     * ✅ 실제 기능 요청 (REST API 유지)
+     * - MCP Tool 내부에서 호출하거나
+     * - Postman / 일반 API 호출용
      */
     @PostMapping(
             value = "/mcp/assess",
@@ -57,7 +92,7 @@ public class DepartureTimingController {
     }
 
     /**
-     * ✅ preset 저장도 유지
+     * ✅ preset 저장
      */
     @PostMapping(
             value = "/mcp/presets",
@@ -65,7 +100,6 @@ public class DepartureTimingController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<?> savePreset(@RequestBody SavePresetRequest request) {
-        // 기존 SavePresetRequest/Response 쓰고 있으면 그 타입으로 바꿔도 됨
         return ResponseEntity.ok(departureTimingService.savePreset(request));
     }
 }
