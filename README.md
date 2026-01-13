@@ -50,6 +50,7 @@
 | `estimatedTimeToStation` | Integer | 역까지 이동 시간 (분) |
 | `station` | String | 지하철 역 이름 |
 | `line` | String | 지하철 노선 |
+| `direction` | String | 상행/하행 |
 | `currentTime` | String | 현재 시각 (HH:mm) |
 
 > `presetName`이 제공되면 해당 값이 우선 사용됩니다.
