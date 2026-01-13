@@ -10,5 +10,6 @@ public class AssessDepartureTimingRequest {
     private Integer estimatedTimeToStation;
     private String station;
     private String line;
+    private String direction;
     private LocalTime currentTime;
 }

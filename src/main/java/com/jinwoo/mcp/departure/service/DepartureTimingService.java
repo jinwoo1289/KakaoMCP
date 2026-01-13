@@ -22,7 +22,8 @@ public class DepartureTimingService {
     }
 
     public AssessDepartureTimingResponse assess(AssessDepartureTimingRequest request) {
-        List<Integer> arrivals = arrivalClient.getRemainingMinutes(request.getStation(), request.getLine());
+        List<Integer> arrivals = arrivalClient.getRemainingMinutes(request.getStation(), request.getLine(),
+                request.getDirection());
         Integer estimated = null;
         int bufferMinutes = 1;
 

@@ -24,7 +24,7 @@ public class SeoulArrivalClient implements ArrivalClient {
     private String apiKey;
 
     @Override
-    public List<Integer> getRemainingMinutes(String station, String line) {
+    public List<Integer> getRemainingMinutes(String station, String line, String direction) {
         try {
             URI uri = UriComponentsBuilder
                     .fromUriString("http://swopenAPI.seoul.go.kr/api/subway/{key}/xml/realtimeStationArrival/0/30/{station}")
@@ -45,6 +45,7 @@ public class SeoulArrivalClient implements ArrivalClient {
 
             List<Integer> live = res.getRow().stream()
                     .filter(r -> targetSubwayId.equals(r.getSubwayId()))
+                    .filter(r -> direction == null || direction.equals(r.getUpdnLine()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
                     .filter(m -> m > 0)
