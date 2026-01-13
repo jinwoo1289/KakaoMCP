@@ -69,10 +69,23 @@ public class DepartureTimingController {
                                             "inputSchema", Map.of(
                                                     "type", "object",
                                                     "properties", Map.of(
-                                                            "station", Map.of("type", "string"),
-                                                            "line", Map.of("type", "string"),
-                                                            "estimatedTimeToStation", Map.of("type", "number"),
-                                                            "presetName", Map.of("type", "string")
+                                                            "station", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "출발하려는 지하철역 이름 (예: 서울역)"
+                                                            ),
+                                                            "line", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "지하철 노선 (예: 1호선)"
+                                                            ),
+                                                            "estimatedTimeToStation", Map.of(
+                                                                    "type", "number",
+                                                                    "description", "집에서 역까지 이동 시간(분)"
+                                                            ),
+                                                            "presetName", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "저장된 이동 시간 프리셋 이름"
+                                                            )
+
                                                     ),
                                                     "required", new String[]{"station", "line"}
                                             )
