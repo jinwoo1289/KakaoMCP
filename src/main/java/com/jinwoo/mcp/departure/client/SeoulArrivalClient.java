@@ -41,6 +41,10 @@ public class SeoulArrivalClient implements ArrivalClient {
             }
             log.info("DEBUG rows={} station={} line={}", res.getRow().size(), station, line);
 
+            log.info("DEBUG distinctUpdnLine={}",
+                    res.getRow().stream().map(RealTimeArrivalResponse.Row::getUpdnLine).distinct().toList()
+            );
+
             log.info("DEBUG distinctSubwayId={}",
                     res.getRow().stream()
                             .map(RealTimeArrivalResponse.Row::getSubwayId)
@@ -56,7 +60,6 @@ public class SeoulArrivalClient implements ArrivalClient {
                     .filter(r -> direction == null || direction.equals(r.getUpdnLine()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
-                    .filter(m -> m > 0)
                     .sorted()
                     .limit(5)
                     .toList();
