@@ -71,14 +71,17 @@ public class SeoulArrivalClient implements ArrivalClient {
             log.info("DEBUG total={} idFiltered={} dirFiltered={} barvlDtSample={}",
                     total, idFiltered, dirFiltered, barvlSample);
 
+            String normalizedDir = normalizeDirection(direction, line);
+
             List<Integer> live = res.getRow().stream()
                     .filter(r -> targetSubwayId.equals(r.getSubwayId()))
-                    .filter(r -> direction == null || direction.equals(r.getUpdnLine()))
+                    .filter(r -> normalizedDir == null || normalizedDir.equals(r.getUpdnLine()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
                     .sorted()
                     .limit(5)
                     .toList();
+
 
             log.info("LIVE size={} station={} line={} ids={}",
                     live.size(), station, line,
@@ -141,6 +144,29 @@ public class SeoulArrivalClient implements ArrivalClient {
             default -> null;
         };
     }
+
+    private String normalizeDirection(String direction, String line) {
+        if (direction == null) return null;
+        String d = direction.trim();
+
+        // 흔한 표현들 정리
+        if (d.equalsIgnoreCase("up")) d = "상행";
+        if (d.equalsIgnoreCase("down")) d = "하행";
+
+        // 2호선이면 상/하행을 내/외선으로 못 바꿈(역마다 달라서)
+        // 그냥 들어온 값이 내선/외선이면 그대로 쓰고,
+        // 상행/하행이 들어오면 방향 필터를 아예 적용하지 않는 게 안전
+        boolean isLine2 = line != null && (line.trim().equals("2") || line.trim().equals("2호선"));
+        if (isLine2) {
+            if (d.equals("내선") || d.equals("외선")) return d;
+            return null; // 상행/하행 들어오면 필터 안 함
+        }
+
+        // 다른 호선은 상행/하행만 허용
+        if (d.equals("상행") || d.equals("하행")) return d;
+        return null;
+    }
+
 
 
 }
