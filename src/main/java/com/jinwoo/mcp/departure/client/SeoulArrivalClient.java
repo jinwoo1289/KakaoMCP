@@ -48,16 +48,21 @@ public class SeoulArrivalClient implements ArrivalClient {
                     .limit(5)
                     .toList();
 
+            if (live.isEmpty()) {
+                System.out.println("[SeoulArrivalClient] LIVE size=" + live.size() + " station=" + station
+                + " line=" + line + " -> " + live);
+            }
+
             return live.isEmpty() ? mockArrivals() : live;
 
         } catch (Exception e) {
+            System.out.println("[SeoulArrivalClient] FALLBACK used: " + e.getMessage());
             return mockArrivals(); // 네트워크/파싱 에러도 안정 fallback
         }
     }
 
     private List<Integer> mockArrivals() {
-        int first = ThreadLocalRandom.current().nextInt(0, 3); // 0~2분
-        return List.of(first, first+3, first+6, first+9, first+12);
+        return List.of(2, 5, 8, 11, 14);
     }
 
     private Integer parseSecondsToMinutesCeil(String secondsStr) {
