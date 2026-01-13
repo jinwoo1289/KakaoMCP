@@ -28,7 +28,7 @@ public class SeoulArrivalClient implements ArrivalClient {
         try {
             URI uri = UriComponentsBuilder
                     .fromUriString("http://swopenAPI.seoul.go.kr/api/subway/{key}/xml/realtimeStationArrival/0/30/{station}")
-                    .buildAndExpand(Map.of("key", apiKey, "station", station))
+                    .buildAndExpand(Map.of("key", apiKey, "station", normalizeStation(station)))
                     .encode()
                     .toUri();
 
@@ -168,6 +168,10 @@ public class SeoulArrivalClient implements ArrivalClient {
         return null;
     }
 
+    private String normalizeStation(String station) {
+        if (station == null) return null;
+        return station.replaceAll("\\s+", "").replace("역", "");
+    }
 
 
 }
