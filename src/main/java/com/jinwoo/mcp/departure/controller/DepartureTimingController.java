@@ -81,6 +81,10 @@ public class DepartureTimingController {
                                                                     "type", "number",
                                                                     "description", "집에서 역까지 이동 시간(분)"
                                                             ),
+                                                            "direction", Map.of(
+                                                                    "type", "string",
+                                                                    "description", "상행/하행"
+                                                            ),
                                                             "presetName", Map.of(
                                                                     "type", "string",
                                                                     "description", "저장된 이동 시간 프리셋 이름"
@@ -141,6 +145,11 @@ public class DepartureTimingController {
                 if (arguments.get("presetName") != null) {
                     req.setPresetName((String) arguments.get("presetName"));
                 }
+
+                if (arguments.get("direction") != null) {
+                    req.setDirection((String) arguments.get("direction"));
+                }
+
 
                 Object result = departureTimingService.assess(req);
 
