@@ -15,7 +15,7 @@ public class HealthController {
         return Map.of(
                 "name", "departure-timing-mcp",
                 "status", "ok",
-                "endpoints", List.of("/mcp", "/mcp/presets")
+                "endpoints", List.of("/mcp/assess", "/mcp/presets")
         );
     }
 
