@@ -2,6 +2,7 @@ package com.jinwoo.mcp.departure.client;
 
 
 import com.jinwoo.mcp.departure.dto.RealTimeArrivalResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
@@ -9,11 +10,12 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ThreadLocalRandom;
 
 
 @Component
+@Slf4j
 public class SeoulArrivalClient implements ArrivalClient {
 
     private final RestTemplate restTemplate = new RestTemplate();
@@ -26,7 +28,7 @@ public class SeoulArrivalClient implements ArrivalClient {
         try {
             URI uri = UriComponentsBuilder
                     .fromUriString("http://swopenAPI.seoul.go.kr/api/subway/{key}/xml/realtimeStationArrival/0/30/{station}")
-                    .buildAndExpand(apiKey, station)
+                    .buildAndExpand(Map.of("key", apiKey, "station", station))
                     .encode()
                     .toUri();
 
@@ -37,16 +39,22 @@ public class SeoulArrivalClient implements ArrivalClient {
                 return mockArrivals(); // fallback
             }
 
-            String normalizedLine = line.endsWith("호선") ? line : line + "호선";
+            String targetSubwayId = lineToSubwayId(line);
+            if (targetSubwayId == null)
+                return mockArrivals();
 
             List<Integer> live = res.getRow().stream()
-                    // station 필터는 사실 필요없어서 빼도 됨(원하면 유지)
-                    .filter(r -> r.getTrainLineNm() != null && r.getTrainLineNm().contains(normalizedLine))
+                    .filter(r -> targetSubwayId.equals(r.getSubwayId()))
                     .map(r -> parseSecondsToMinutesCeil(r.getBarvlDt()))
                     .filter(Objects::nonNull)
                     .sorted()
                     .limit(5)
                     .toList();
+
+            log.info("LIVE size={} station={} line={} ids={}",
+                    live.size(), station, line,
+                    res.getRow().stream().map(RealTimeArrivalResponse.Row::getSubwayId).distinct().toList()
+            );
 
             if (live.isEmpty()) {
                 System.out.println("[SeoulArrivalClient] LIVE size=" + live.size() + " station=" + station
@@ -74,4 +82,15 @@ public class SeoulArrivalClient implements ArrivalClient {
 
         return (sec == 0) ? 0 : (int) Math.ceil(sec / 60.0);
     }
+
+    private String lineToSubwayId(String line) {
+        return switch (line) {
+            case "1", "1호선" -> "1001";
+            case "2", "2호선" -> "1002";
+            case "3", "3호선" -> "1003";
+            case "4", "4호선" -> "1004";
+            default -> null;
+        };
+    }
+
 }
